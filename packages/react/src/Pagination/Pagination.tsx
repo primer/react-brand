@@ -1,5 +1,5 @@
 import React, {memo, PropsWithChildren, useCallback} from 'react'
-import {Link, useWindowSize} from '..'
+import {Link, Text} from '..'
 
 import {default as clsx} from 'clsx'
 
@@ -56,14 +56,12 @@ export const Pagination = memo(
     hrefBuilder = defaultHrefBuilder,
     pageAttributesBuilder,
     marginPageCount = 1,
-    showPages,
+    showPages = {narrow: false, regular: true, wide: true},
     surroundingPageCount = 2,
     'aria-label': ariaLabel,
     'data-testid': testId,
     ...rest
   }: PaginationProps) => {
-    const {isMedium} = useWindowSize()
-
     const navRef = React.useRef<HTMLElement>(null)
     const pageElements = usePaginationPages({
       pageCount,
@@ -72,9 +70,26 @@ export const Pagination = memo(
       hrefBuilder,
       pageAttributesBuilder,
       marginPageCount,
-      showPages: showPages !== undefined ? showPages : isMedium ? true : false,
+      showPages,
       surroundingPageCount,
     })
+
+    const getSummaryClasses = useCallback(() => {
+      if (showPages === true) {
+        return styles['Pagination__hidden']
+      } else if (typeof showPages === 'object') {
+        return Object.entries(showPages).reduce<string[]>((acc, [key, value]) => {
+          if (value) {
+            acc.push(styles[`Pagination__hidden-${key as 'narrow' | 'regular' | 'wide'}`])
+          } else {
+            acc.push(styles[`Pagination__visible-${key as 'narrow' | 'regular' | 'wide'}`])
+          }
+          return acc
+        }, [])
+      }
+
+      return styles['Pagination__visible']
+    }, [showPages])
 
     return (
       <nav
@@ -85,6 +100,9 @@ export const Pagination = memo(
         aria-label={ariaLabel || 'Pagination'}
         {...rest}
       >
+        <Text className={clsx(styles.Pagination__summary, getSummaryClasses())}>
+          {`Page ${currentPage} of ${pageCount}`}
+        </Text>
         <div className={clsx(styles.Pagination__inner)}>{pageElements}</div>
       </nav>
     )
@@ -98,7 +116,7 @@ type UsePaginationPagesParameters = {
   hrefBuilder: (n: number) => string
   pageAttributesBuilder?: (n: number) => {[key: string]: string}
   marginPageCount: number
-  showPages?: PaginationProps['showPages']
+  showPages: PaginationProps['showPages']
   surroundingPageCount: number
 }
 
@@ -122,16 +140,16 @@ export function usePaginationPages({
   )
 
   const getPagesClasses = useCallback(() => {
-    if (typeof showPages === 'boolean') {
-      return !showPages ? styles['Pagination__item--hidden'] : undefined
+    if (showPages === false) {
+      return styles['Pagination--hidden']
     }
 
     if (typeof showPages === 'object') {
       return Object.entries(showPages).reduce<string[]>((acc, [key, value]) => {
         if (value) {
-          acc.push(styles[`Pagination__item--visible-${key as 'narrow' | 'regular' | 'wide'}`])
+          acc.push(styles[`Pagination__visible-${key as 'narrow' | 'regular' | 'wide'}`])
         } else {
-          acc.push(styles[`Pagination__item--hidden-${key as 'narrow' | 'regular' | 'wide'}`])
+          acc.push(styles[`Pagination__hidden-${key as 'narrow' | 'regular' | 'wide'}`])
         }
         return acc
       }, [])
