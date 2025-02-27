@@ -106,9 +106,9 @@ describe('Pagination', () => {
     const pagedItems = Array.from(rootEl.querySelectorAll('a')).slice(1, -1) // remove the previous and next links
 
     for (const item of pagedItems) {
-      expect(item).toHaveClass('Pagination__item--hidden-narrow')
-      expect(item).toHaveClass('Pagination__item--visible-regular')
-      expect(item).toHaveClass('Pagination__item--visible-wide')
+      expect(item).toHaveClass('Pagination__hidden-narrow')
+      expect(item).toHaveClass('Pagination__visible-regular')
+      expect(item).toHaveClass('Pagination__visible-wide')
     }
   })
 
@@ -132,10 +132,43 @@ describe('Pagination', () => {
   })
 
   it('does not show paged items by default on narrow viewports', () => {
-    mockUseWindowSize.mockImplementation(() => ({isMedium: false}))
     const {getByRole} = render(<Pagination pageCount={5} currentPage={1} />)
-    const rootEl = getByRole('navigation')
-    const linksAsVerbatimText = Array.from(rootEl.querySelectorAll('a')).map(link => link.textContent)
-    expect(linksAsVerbatimText).toEqual(['Previous', 'Next'])
+
+    const button = getByRole('button', {name: 'Page 1'})
+
+    expect(button).toHaveClass('Pagination__hidden-narrow')
+    expect(button).toHaveClass('Pagination__visible-regular')
+    expect(button).toHaveClass('Pagination__visible-wide')
+  })
+
+  it('shows a pagination summary when page numbers are not shown', () => {
+    const {getByText} = render(<Pagination pageCount={5} currentPage={1} showPages={false} />)
+
+    expect(getByText('Page 1 of 5')).toBeVisible()
+  })
+
+  it('does not show a pagination summary when page numbers are shown', () => {
+    const {queryByText} = render(<Pagination pageCount={5} currentPage={1} showPages={true} />)
+    expect(queryByText('Page 1 of 5')).toHaveClass('Pagination__hidden')
+  })
+
+  it('shows a pagination summary when page numbers are not shown across different viewports', () => {
+    const {queryByText} = render(
+      <Pagination
+        pageCount={10}
+        currentPage={3}
+        showPages={{
+          narrow: true,
+          regular: true,
+          wide: false,
+        }}
+      />,
+    )
+
+    const summary = queryByText('Page 3 of 10')
+
+    expect(summary).toHaveClass('Pagination__hidden-narrow')
+    expect(summary).toHaveClass('Pagination__hidden-regular')
+    expect(summary).toHaveClass('Pagination__visible-wide')
   })
 })
