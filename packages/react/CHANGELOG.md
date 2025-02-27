@@ -1,5 +1,11 @@
 # @primer/react-brand
 
+## 0.47.2
+
+### Patch Changes
+
+- [#889](https://github.com/primer/brand/pull/889) [`34e444e`](https://github.com/primer/brand/commit/34e444ee2734f5cddb5428ae230c758079237b41) Thanks [@danielguillan](https://github.com/danielguillan)! - Added new `green-blue-purple` `color` option to `Label` component
+
 ## 0.47.1
 
 ### Patch Changes
